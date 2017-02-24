@@ -24,7 +24,11 @@ def make(nplayers, gsize, input):
             '../..',
             input
         )
-    click.echo(input)
     with click.open_file(input, 'r') as input_file:
         grid = input_file.read()
-    create_config(nplayers=nplayers, gsize=gsize, grid=grid)
+
+    players = []
+    for i in range(1, nplayers + 1):
+        players.append(click.prompt('Enter name of player:',
+                default='player %s' % i))
+    create_config(nplayers=nplayers, gsize=gsize, grid=grid, players=players)
