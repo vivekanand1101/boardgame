@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+
 class Board(object):
     ''' The Board Class '''
 
-    def __init__(self, np, gsize, board):
+    def __init__(self, nplayers, gsize, board):
         ''' Instantiate the board '''
-        self.np = np
+        self.nplayers = nplayers
         self.gsize = gsize
         self.board = board
 

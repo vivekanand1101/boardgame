@@ -12,7 +12,7 @@ CONFIG = ConfigParser()
 CONFIG.optionxform = str
 
 
-def create_config(np, gsize):
+def create_config(nplayers, gsize):
     ''' Method that creates the configuration file
     of the game based on the info provided
 
@@ -20,7 +20,7 @@ def create_config(np, gsize):
     :args gsize: Grid size of the board
     '''
 
-    CONFIG['np'] = np
+    CONFIG['nplayers'] = nplayers
     CONFIG['gsize'] = gsize
 
     if os.path.exists(CFG_PATH):
