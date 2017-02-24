@@ -13,8 +13,3 @@ F  Z  K   G   D   F   H   M   E   S   M   E   G   N   J
 G  S  X   T   P   D   X   L   E   R   M   B   M   S   Q  
 U  W  K   W   R   Z   M   D   D   W   C   T   Q   A   K  
 J  Q  B   F   J   X   X   J   P   Z   H   B   G   G   C 
-3
-2   5   2   9 
-2   6   5   6 
-7   2   7   5 
-2 

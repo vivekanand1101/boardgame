@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import os
+
 import click
 
 from bdgame.app import app
@@ -9,11 +11,20 @@ from bdgame.utils import create_config
 @app.command()
 @click.option('--nplayers', prompt="Number of players in the game: ", default=2,
               help="The number of players that will play this game")
-@click.option('--gsize', prompt="Grid size (like: 15x15): ",
-              help="Grid size of board (like: 15x15): ", default="15x15")
-def make(nplayers, gsize):
+@click.option('--gsize', prompt="Grid size: ",
+              help="Grid size of board ", default="15 15")
+@click.option('--input', prompt="Input file path of grid",
+              help="Input file path of the grid", default="input.txt")
+def make(nplayers, gsize, input):
     ''' Given the game configurations, make the game '''
 
-    click.echo('number of players: ', nplayers)
-    click.echo('grid size: ', gsize)
-    # create_config(nplayers=nplayers, gsize=gsize)
+    if not input.startswith('/'):
+        input = os.path.join(os.path.abspath(
+            os.path.dirname(__file__)),
+            '../..',
+            input
+        )
+    click.echo(input)
+    with click.open_file(input, 'r') as input_file:
+        grid = input_file.read()
+    create_config(nplayers=nplayers, gsize=gsize, grid=grid)
