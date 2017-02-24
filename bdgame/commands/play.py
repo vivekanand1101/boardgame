@@ -3,7 +3,7 @@
 
 from bdgame.app import app
 
-@app.command
+@app.command()
 def play():
     ''' Play the game '''
     pass
