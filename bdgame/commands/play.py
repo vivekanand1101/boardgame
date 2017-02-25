@@ -4,7 +4,7 @@
 import click
 
 from bdgame.app import app
-from bdgame.utils import load_game_conf, make_players
+from bdgame.utils import load_game_conf, make_players, make_board
 from bdgame.exceptions import ItemNotFound, BDException
 
 @app.command()
@@ -16,4 +16,5 @@ def play():
     items = load_game_conf()
 
     # Make player and board
-    players = make_players(players)
+    players = make_players(items['players'])
+    board = make_board(items['grid'], items['glen'], items['gbred'])
