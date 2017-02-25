@@ -9,14 +9,14 @@ from configparser import ConfigParser
 import click
 
 from bdgame.exceptions import BDException, ItemNotFound
-import bdgame.utils.model as model
+from bdgame.utils import model
 
 CFG_PATH = os.path.join(os.environ.get('HOME'), '.bdgame')
 CONFIG = ConfigParser()
 CONFIG.optionxform = str
 
 
-def create_config(nplayers, gsize, grid, players):
+def create_config(nplayers, gsize, grid, players, wcount, locations):
     ''' Method that creates the configuration file
     of the game based on the info provided
 
@@ -25,9 +25,11 @@ def create_config(nplayers, gsize, grid, players):
     '''
 
     CONFIG['nplayers'] = {'nplayers': nplayers}
+    CONFIG['players'] = {'players': players}
+    CONFIG['wcount'] = {'wcount': wcount}
+    CONFIG['locations'] = {'locations': locations}
     CONFIG['gsize'] = {'gsize': gsize}
     CONFIG['grid'] = {'grid': grid}
-    CONFIG['players'] = {'players': players}
 
     if os.path.exists(CFG_PATH):
         if click.confirm('You already have a config file, if you continue '

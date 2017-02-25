@@ -14,18 +14,20 @@ from bdgame.utils import create_config
               help="The number of players that will play this game")
 @click.option('--gsize', prompt="Grid size: ",
               help="Grid size of board ", default="15 15")
-@click.option('--input', prompt="Input file path of grid",
+@click.option('--inp_file', prompt="Input file path of grid",
               help="Input file path of the grid", default="input.txt")
-def make(nplayers, gsize, input):
+@click.option('--wcount', prompt="Number of correct words: ",
+              help="Number of correct words")
+def make(nplayers, gsize, inp_file, wcount):
     ''' Given the game configurations, make the game '''
 
-    if not input.startswith('/'):
-        input = os.path.join(os.path.abspath(
+    if not inp_file.startswith('/'):
+        inp_file = os.path.join(os.path.abspath(
             os.path.dirname(__file__)),
             '../..',
-            input
+            inp_file
         )
-    with click.open_file(input, 'r') as input_file:
+    with click.open_file(inp_file, 'r') as input_file:
         grid = input_file.read()
 
     players = []
@@ -40,4 +42,29 @@ def make(nplayers, gsize, input):
 
     # store the names of players as a comma separated string
     players = ",".join(players)
-    create_config(nplayers=nplayers, gsize=gsize, grid=grid, players=players)
+
+    locations = []
+    for i in range(int(wcount)):
+        location = click.prompt("Enter the location of word "
+                                " on grid like( 2 3 2 5): "
+        )
+        if len(location.strip().split()) % 2 != 0:
+            click.echo("Locations are two D coordinates, they have to be pairs"
+                       " Try again.")
+            sys.exit()
+        elif location in locations:
+            click.echo("Duplicate locations not allowed")
+            sys.exit()
+        locations.append(location)
+        click.echo('Location noted')
+
+    # store the locations as comma separated strings
+    locations = ','.join(locations)
+    create_config(
+        nplayers=nplayers,
+        gsize=gsize,
+        grid=grid,
+        players=players,
+        wcount=int(wcount),
+        locations=locations,
+    )
