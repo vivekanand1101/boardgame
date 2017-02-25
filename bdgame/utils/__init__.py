@@ -8,6 +8,8 @@ from configparser import ConfigParser
 
 import click
 
+from bdgame.exceptions import BDException, ItemNotFound
+
 CFG_PATH = os.path.join(os.environ.get('HOME'), '.bdgame')
 CONFIG = ConfigParser()
 CONFIG.optionxform = str
@@ -60,13 +62,10 @@ def check_grid_sane(grid, glen, gbred):
     grid = grid.splitlines()
     if len(grid) != glen:
         return False
-    grid_copy = []
     for row in grid:
         row = row.split()
         if len(row) != gbred:
             return False
-        grid_copy.append(row)
-    click.echo(grid_copy)
     return True
 
 
@@ -105,7 +104,7 @@ def load_game_conf():
         raise BDException('Grid size format is wrong.')
 
     gsize = gsize.strip().split(' ')
-    glen, gbred = gsize[0], gsize[1]
+    glen, gbred = int(gsize[0]), int(gsize[1])
 
     grid = get_item('grid')
     if not grid:
