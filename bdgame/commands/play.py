@@ -41,7 +41,7 @@ def play():
     sane = check_grid_sane(grid, glen, gbred)
     if not sane:
         click.echo('Grid does not match with grid size, check in config file '
-                   ' or make the grid again')
+                   ' or make the game again')
 
     # Get the grid in form of 2D array
     grid = get_grid(grid)
