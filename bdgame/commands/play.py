@@ -4,7 +4,7 @@
 import click
 
 from bdgame.app import app
-from bdgame.utils import get_item
+from bdgame.utils import get_item, check_grid_sane, get_grid
 from bdgame.exceptions import ItemNotFound, BDException
 
 @app.command()
@@ -37,3 +37,11 @@ def play():
     grid = get_item('grid')
     if not grid:
         raise ItemNotFound('Grid is absent in .bdgame')
+
+    sane = check_grid_sane(grid, glen, gbred)
+    if not sane:
+        click.echo('Grid does not match with grid size, check in config file '
+                   ' or make the grid again')
+
+    # Get the grid in form of 2D array
+    grid = get_grid(grid)

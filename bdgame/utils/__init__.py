@@ -51,3 +51,31 @@ def get_item(item):
         values = CONFIG[item]
         return values[item]
     return None
+
+
+def check_grid_sane(grid, glen, gbred):
+    ''' Check if the grid is according to the specifics
+    mentioned by the user '''
+
+    grid = grid.splitlines()
+    if len(grid) != glen:
+        return False
+    grid_copy = []
+    for row in grid:
+        row = row.split()
+        if len(row) != gbred:
+            return False
+        grid_copy.append(row)
+    click.echo(grid_copy)
+    return True
+
+
+def get_grid(grid):
+    ''' Return grid in form of 2D list '''
+
+    grid = grid.splitlines()
+    grid_copy = []
+    for row in grid:
+        row = row.split()
+        grid_copy.append(row)
+    return grid_copy
