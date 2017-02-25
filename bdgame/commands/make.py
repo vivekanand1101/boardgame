@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import os
+import sys
 
 import click
 
@@ -29,6 +30,14 @@ def make(nplayers, gsize, input):
 
     players = []
     for i in range(1, nplayers + 1):
-        players.append(click.prompt('Enter name of player:',
-                default='player %s' % i))
+        name = click.prompt('Enter name of player:',
+                default='player %s' % i)
+        name = name.strip()
+        if ',' in name:
+            click.echo(', cannot be in a name, try again')
+            sys.exit()
+        players.append(name)
+
+    # store the names of players as a comma separated string
+    players = ",".join(players)
     create_config(nplayers=nplayers, gsize=gsize, grid=grid, players=players)

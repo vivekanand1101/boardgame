@@ -3,6 +3,7 @@
 
 import os
 import sys
+import json
 from configparser import ConfigParser
 
 import click
@@ -30,8 +31,23 @@ def create_config(nplayers, gsize, grid, players):
                          'the config of last game will be lost '):
             with click.open_file(CFG_PATH, 'w+') as config_file:
                 CONFIG.write(config_file)
+            click.echo('New config file created in $HOME/.bdgame')
         else:
+            click.echo('You aborted creating new config file')
             sys.exit(1)
     else:
         with click.open_file(CFG_PATH, 'w+') as config_file:
             CONFIG.write(config_file)
+
+
+def get_item(item):
+    ''' Read the configuration file and return the value of given
+    item in config '''
+
+    if os.path.exists(CFG_PATH):
+        CONFIG.read(CFG_PATH)
+        if item not in CONFIG.sections():
+            return None
+        values = CONFIG[item]
+        return values[item]
+    return None
