@@ -9,6 +9,7 @@ from configparser import ConfigParser
 import click
 
 from bdgame.exceptions import BDException, ItemNotFound
+import bdgame.utils.model as model
 
 CFG_PATH = os.path.join(os.environ.get('HOME'), '.bdgame')
 CONFIG = ConfigParser()
@@ -118,4 +119,35 @@ def load_game_conf():
     # Get the grid in form of 2D array
     grid = get_grid(grid)
 
-    return {'nplayers': nplayers, 'players': players, 'grid': grid}
+    output = {
+        'nplayers': nplayers,
+        'players': players,
+        'grid': grid,
+        'glen': glen,
+        'gbred': gbred
+    }
+
+    return output
+
+def make_players(players):
+    ''' Makes player objects from player names
+    :args players: A list of names of all the players
+    '''
+
+    player_list = []
+    for player in players:
+        player_list.append(model.Player(name=player))
+
+    return player_list
+
+
+def make_board(grid, glen, gbred):
+    ''' Makes board object from the given grid '''
+
+    board = model.Board(
+        grid=grid,
+        length=glen,
+        breadth=gbred,
+    )
+
+    return board
