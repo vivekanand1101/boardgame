@@ -38,8 +38,8 @@ class Player(object):
     def __init__(self, name):
         ''' Instantiate the player object '''
         self.name = name
-        self.score = 0
-        self.answers = []
+        self._score = 0
+        self._answers = []
         self._correct_answers = []
 
     def __repr__(self):
@@ -49,6 +49,26 @@ class Player(object):
     def __eq__(self, other):
         ''' Equality of player '''
         return self.name == other.name
+
+    @property
+    def score(self):
+        ''' Returns the score of the player '''
+        return self._score
+
+    @score.setter
+    def score(self, value):
+        ''' Set the score'''
+        self._score = value
+
+    @property
+    def answers(self):
+        ''' Returns the answers answered by the user '''
+        return self._answers
+
+    @answers.setter
+    def answers(self, value):
+        ''' Set the answers '''
+        self._answers = value
 
     @property
     def correct_answers(self):
@@ -151,7 +171,11 @@ class Game(object):
         ''' Adjust the variables when user input was correct '''
 
         words = self.conf['words']
-        current_player.answers.append(user_input)
+
+        # update the user's answers
+        answers = current_player.answers
+        answers.append(user_input)
+        current_player.answers = answers
 
         # increase his score
         current_player.score += 1
@@ -175,7 +199,10 @@ class Game(object):
 
         words = self.conf['words']
         if user_input == 'PASS':
-            current_player.answers.append(user_input)
+            # update the user's answers
+            answers = current_player.answers
+            answers.append(user_input)
+            current_player.answers = answers
             click.echo(
                 "%s has PASSed, %s's score is %s" % (
                     current_player.name,
@@ -195,7 +222,10 @@ class Game(object):
             )
         elif user_input in words and words[user_input]['count'] == 0:
             # The word already taken, even the duplicate ones of the word
-            current_player.answers.append(user_input)
+            # update the user's answers
+            answers = current_player.answers
+            answers.append(user_input)
+            current_player.answers = answers
             click.echo(
                 "%s is a already identified. %s's score is %s" % (
                     user_input,
@@ -205,7 +235,10 @@ class Game(object):
             )
         else:
             # he answered wrong
-            current_player.answers.append(user_input)
+            # update the user's answers
+            answers = current_player.answers
+            answers.append(user_input)
+            current_player.answers = answers
             click.echo(
                 "%s is a wrong choice. %s's score is %s" % (
                     user_input,
