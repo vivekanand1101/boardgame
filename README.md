@@ -1,9 +1,9 @@
 * A simple cli multiplayer board game in python
 
-    How to install
-    ```python3 -m pip install bdgame```
+    ** How to install
+    Download the source and run ```python3 setup.py install```
 
-    How to use
+    ** How to use
 
     ```bdgame make --inp input.txt``` (This input file should contain only the grid)
     ```bdgame play```
