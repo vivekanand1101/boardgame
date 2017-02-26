@@ -121,12 +121,22 @@ def load_game_conf():
     # Get the grid in form of 2D array
     grid = get_grid(grid)
 
+    wcount = get_item('wcount')
+    if not wcount:
+        raise ItemNotFound('Number of correct words (wcount) not in .bdgame')
+    wcount = int(wcount)
+
+    locations = get_locations()
+    words = get_words(grid, locations)
     output = {
         'nplayers': nplayers,
         'players': players,
         'grid': grid,
         'glen': glen,
-        'gbred': gbred
+        'gbred': gbred,
+        'wcount': wcount,
+        'words': words,
+        'locations': locations,
     }
 
     return output
@@ -153,3 +163,209 @@ def make_board(grid, glen, gbred):
     )
 
     return board
+
+def get_locations():
+    ''' Get the locations from config  and turn it into a list '''
+
+    locations = get_item('locations')
+    if not locations:
+        raise ItemNotFound(
+            'Coordinates of correct words(locations) not found in .bdgame')
+    locations = locations.strip().split(',')
+
+    locations_copy = []
+    for i in locations:
+        i = i.strip().split(' ')
+        i = [l for l in i if l != '']
+        locations_copy.append(i)
+
+    return locations_copy
+
+
+def _get_word(grid, location, shape):
+    ''' Get the word from the grid
+    :args grid: A 2D list of letters
+    :args location: A list of either 4 or 6 elements, depending upon the shape
+    word in the grid.
+    :args shape: A string saying what kind of shape the word forms like:
+        horizontal, vertical, diagonal or L '''
+
+    if shape == 'horizontal':
+        string = ''
+        for i in range(int(location[1]), int(location[3]) + 1):
+            string += grid[int(location[0])][i]
+        return string
+
+    elif shape == 'vertical':
+        string = ''
+        for i in range(int(location[0]), int(location[2]) + 1):
+            string += grid[i][int(location[1])]
+        return string
+
+
+def get_words(grid, locations):
+    ''' Given the locations in grid, extract the words out of it
+    :args grid: A 2D list of strings
+    :args locations: A list of lists where each list represents Coordinates
+    of each word
+    '''
+
+    words = {}
+    for i in range(len(locations)):
+        # the shape is not 'L'
+        word = None
+        if len(locations[i]) == 4:
+            # if the shape is horizontal
+            if locations[i][0] == locations[i][2]:
+                word = _get_word(grid, locations[i], shape='horizontal')
+
+            # if the shape is vertical
+            elif locations[i][1] == locations[i][3]:
+                word = _get_word(grid, locations[i], shape='vertical')
+
+            # if the shape is diagonal
+            # elif (
+                    # locations[i][1] != locations[i][3]
+                    # and locations[i][0] != locations[i][2]):
+                # word = _get_word(grid, locations[i], shape='diagonal')
+
+            else:
+                # The shape is L
+                pass
+
+        if word not in words:
+            words[word] = {}
+            words[word]['count'] = 1
+            words[word]['locations'] = [locations[i]]
+        else:
+            words[word]['count'] += 1
+            words[word]['locations'].append(locations[i])
+
+    return words
+
+
+def _game_starter(players):
+    ''' Choose who will start the game
+    The logic can be tweaked '''
+    return players[0]
+
+
+def _get_player_turn(last_player, players):
+    ''' Return the player object whose turn is now '''
+
+    if not last_player:
+        return _game_starter(players)
+
+    for i in range(len(players)):
+        if players[i] == last_player:
+            return players[(i+1) % len(players)]
+
+
+def _words_left(words):
+    ''' Check if there are any words left to be checked out '''
+
+    count = 0
+    for word in words:
+        count += words[word]['count']
+
+    return count
+
+
+def display_board(board):
+    ''' Display the board in a fansy manner '''
+
+    click.echo()
+    for i in board.grid:
+        for j in i:
+            click.echo(click.style(str(j + ' '), fg="yellow"), nl=False)
+            click.echo(nl=False)
+        click.echo()
+
+
+def play_game(players, board, words):
+    ''' Let's play the game return the winner's name or 'draw' '''
+
+    click.echo(words)
+    last_player = None
+    while _words_left(words):
+        current_player = _get_player_turn(
+            last_player=last_player,
+            players=players
+        )
+
+        # Show the board
+        display_board(board)
+
+        # Prompt the user to give input
+        user_input = click.prompt(
+            "%s play, it\'s your turn: " % current_player.name)
+        user_input = user_input.strip().upper()
+        if user_input == 'PASS':
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s has PASSed, %s's score is %s" % (
+                    current_player.name,
+                    current_player.name,
+                    current_player.score
+                    )
+            )
+        elif user_input in words and words[user_input]['count'] > 0:
+            # he answered correctly
+            current_player.answers.append(user_input)
+
+            # decrease the word count
+            words[user_input]['count'] -= 1
+            # as of now, just remove any of the duplicates
+            words[user_input]['locations'].pop()
+
+            # increase his score
+            current_player.score += 1
+            click.echo(
+                "%s is a correct choice. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+        elif user_input in words and words[user_input]['count'] == 0:
+            # The word already taken, even the duplicate ones of the word
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s is a already identified. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+        else:
+            # he answered wrong
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s is a wrong choice. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+
+        draw = True
+        for player in players:
+            if player.answers[-2:] != ['PASS', 'PASS']:
+                draw = False
+        if draw:
+            return 'draw'
+
+        last_player = current_player
+
+    return _check_winner(players)
+
+
+def _check_winner(players):
+    ''' From the players score, check who is the winner and return name
+    and if any two players having highest score have same score, the match
+    is draw, return 'draw' '''
+
+    p_scores = sorted(players, key=lambda x: x.score)
+    if p_scores[0].score == p_scores[1].score:
+        return "draw"
+    return p_scores[0].name

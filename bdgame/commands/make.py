@@ -32,8 +32,7 @@ def make(nplayers, gsize, inp_file, wcount):
 
     players = []
     for i in range(1, nplayers + 1):
-        name = click.prompt('Enter name of player:',
-                default='player %s' % i)
+        name = click.prompt('Enter name of player: ', default='player %s' % i)
         name = name.strip()
         if ',' in name:
             click.echo(', cannot be in a name, try again')
@@ -46,8 +45,7 @@ def make(nplayers, gsize, inp_file, wcount):
     locations = []
     for i in range(int(wcount)):
         location = click.prompt("Enter the location of word "
-                                " on grid like( 2 3 2 5): "
-        )
+                                " on grid like( 2 3 2 5): ")
         if len(location.strip().split()) % 2 != 0:
             click.echo("Locations are two D coordinates, they have to be pairs"
                        " Try again.")

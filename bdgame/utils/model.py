@@ -22,7 +22,13 @@ class Player(object):
     def __init__(self, name):
         ''' Instantiate the player object '''
         self.name = name
+        self.score = 0
+        self.answers = []
 
     def __repr__(self):
         ''' Represent the player object '''
         return "Player Name: %s" % self.name
+
+    def __eq__(self, other):
+        ''' Equality of player '''
+        return self.name == other.name
