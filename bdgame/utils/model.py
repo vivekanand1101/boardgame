@@ -10,11 +10,21 @@ class Board(object):
         self.grid = grid
         self.length = length
         self.breadth = breadth
+        self._recognized_locations = []
 
     def __repr__(self):
         ''' Represent the board '''
         return "Board looks like: %s" % self.grid
 
+    @property
+    def recognized_locations(self):
+        ''' Return the recognized_locations in the grid '''
+        return self._recognized_locations
+
+    @recognized_locations.setter
+    def recognized_locations(self, value):
+        ''' Add new recognized_location on the board '''
+        self._recognized_locations = value
 
 class Player(object):
     ''' The Player Class '''

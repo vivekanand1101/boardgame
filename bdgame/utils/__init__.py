@@ -182,7 +182,7 @@ def get_locations():
     return locations_copy
 
 
-def _get_word(grid, location, shape):
+def _trav_grid(grid, location, shape='any', select='word'):
     ''' Get the word from the grid
     :args grid: A 2D list of letters
     :args location: A list of either 4 or 6 elements, depending upon the shape
@@ -190,17 +190,24 @@ def _get_word(grid, location, shape):
     :args shape: A string saying what kind of shape the word forms like:
         horizontal, vertical, diagonal or L '''
 
-    if shape == 'horizontal':
-        string = ''
+    coordinates = []
+    if shape in ['horizontal', 'any']:
         for i in range(int(location[1]), int(location[3]) + 1):
-            string += grid[int(location[0])][i]
+            # coordinates += grid[int(location[0])][i]
+            coordinates.append((int(location[0]), i))
+
+    if shape in ['vertical', 'any']:
+        for i in range(int(location[0]), int(location[2]) + 1):
+            # coordinates += grid[i][int(location[1])]
+            coordinates.append((i, int(location[1])))
+
+    if select == 'word':
+        string = ''
+        for i in coordinates:
+            string += grid[i[0]][i[1]]
         return string
 
-    elif shape == 'vertical':
-        string = ''
-        for i in range(int(location[0]), int(location[2]) + 1):
-            string += grid[i][int(location[1])]
-        return string
+    return coordinates
 
 
 def get_words(grid, locations):
@@ -217,21 +224,22 @@ def get_words(grid, locations):
         if len(locations[i]) == 4:
             # if the shape is horizontal
             if locations[i][0] == locations[i][2]:
-                word = _get_word(grid, locations[i], shape='horizontal')
+                word = _trav_grid(grid, locations[i], shape='horizontal', select='word')
 
             # if the shape is vertical
             elif locations[i][1] == locations[i][3]:
-                word = _get_word(grid, locations[i], shape='vertical')
+                word = _trav_grid(grid, locations[i], shape='vertical', select='word')
 
             # if the shape is diagonal
             # elif (
                     # locations[i][1] != locations[i][3]
                     # and locations[i][0] != locations[i][2]):
-                # word = _get_word(grid, locations[i], shape='diagonal')
+                # word = _trav_grid(grid, locations[i], shape='diagonal', select='word')
 
             else:
                 # The shape is L
                 pass
+
 
         if word not in words:
             words[word] = {}
@@ -271,21 +279,46 @@ def _words_left(words):
     return count
 
 
+def _recognized_location(board, j, i):
+    ''' From the recognized_locations in board, check if the Coordinates
+    are recognized or not '''
+
+    recognized = board.recognized_locations
+
+    for location in recognized:
+        all_coordinates = _trav_grid(
+            board.grid,
+            location,
+            shape='any',
+            select='coordinates'
+        )
+
+        if (i, j) in all_coordinates:
+            return True
+
+    return False
+
+
 def display_board(board):
     ''' Display the board in a fansy manner '''
 
     click.echo()
-    for i in board.grid:
-        for j in i:
-            click.echo(click.style(str(j + ' '), fg="yellow"), nl=False)
-            click.echo(nl=False)
+    for i in range(board.length):
+        for j in range(board.breadth):
+            if not _recognized_location(board, j, i):
+                click.echo(click.style(str(board.grid[i][j] + ' '), fg="yellow"), nl=False)
+                click.echo(nl=False)
+            else:
+                click.echo(click.style(str(board.grid[i][j] + ' '), fg="blue"), nl=False)
+                click.echo(nl=False)
+
         click.echo()
+    click.echo()
 
 
 def play_game(players, board, words):
     ''' Let's play the game return the winner's name or 'draw' '''
 
-    click.echo(words)
     last_player = None
     while _words_left(words):
         current_player = _get_player_turn(
@@ -313,17 +346,23 @@ def play_game(players, board, words):
             # he answered correctly
             current_player.answers.append(user_input)
 
-            # decrease the word count
-            words[user_input]['count'] -= 1
-            # as of now, just remove any of the duplicates
-            words[user_input]['locations'].pop()
-
             # increase his score
             current_player.score += 1
             # update his correct_answers list
             correct_answers = current_player.correct_answers
             correct_answers.append(user_input)
             current_player.correct_answers = correct_answers
+
+            # update the recognized_locations
+            recognized_locations = board.recognized_locations
+            recognized_locations.append(words[user_input]['locations'][0])
+            board.recognized_locations = recognized_locations
+
+            # decrease the word count
+            words[user_input]['count'] -= 1
+            # as of now, just remove any of the duplicates
+            words[user_input]['locations'].pop()
+
             click.echo(
                 "%s is a correct choice. %s's score is %s" % (
                     user_input,
@@ -352,12 +391,12 @@ def play_game(players, board, words):
                 )
             )
 
-        draw = True
+        all_pass = True
         for player in players:
             if player.answers[-2:] != ['PASS', 'PASS']:
-                draw = False
-        if draw:
-            return 'draw'
+                all_pass = False
+        if all_pass:
+            return _check_winner(players)
 
         last_player = current_player
 
@@ -375,7 +414,7 @@ def _check_winner(players):
     return p_scores[0]
 
 
-def display_results(result):
+def display_results(result, board):
     ''' Given the result, display it '''
     if not isinstance(result, str):
         click.echo()
@@ -386,7 +425,11 @@ def display_results(result):
         click.secho("answered: ", nl=False, fg="green")
         click.secho("%s " % result.correct_answers, nl=False, fg="blue")
         click.echo()
+        click.secho("The final board looks like: ", fg="red")
+        display_board(board)
     else:
         click.echo()
         click.secho("Match draw :/ ", fg="green")
         click.echo()
+        click.echo("The final board looks like: ")
+        display_board(board)
