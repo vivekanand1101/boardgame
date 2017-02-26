@@ -320,6 +320,10 @@ def play_game(players, board, words):
 
             # increase his score
             current_player.score += 1
+            # update his correct_answers list
+            correct_answers = current_player.correct_answers
+            correct_answers.append(user_input)
+            current_player.correct_answers = correct_answers
             click.echo(
                 "%s is a correct choice. %s's score is %s" % (
                     user_input,
@@ -365,7 +369,7 @@ def _check_winner(players):
     and if any two players having highest score have same score, the match
     is draw, return 'draw' '''
 
-    p_scores = sorted(players, key=lambda x: x.score)
+    p_scores = sorted(players, key=lambda x: x.score, reverse=True)
     if p_scores[0].score == p_scores[1].score:
         return "draw"
-    return p_scores[0].name
+    return p_scores[0]

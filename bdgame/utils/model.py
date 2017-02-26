@@ -24,6 +24,7 @@ class Player(object):
         self.name = name
         self.score = 0
         self.answers = []
+        self._correct_answers = []
 
     def __repr__(self):
         ''' Represent the player object '''
@@ -32,3 +33,13 @@ class Player(object):
     def __eq__(self, other):
         ''' Equality of player '''
         return self.name == other.name
+
+    @property
+    def correct_answers(self):
+        ''' Returns the correct answers answered by the user '''
+        return self._correct_answers
+
+    @correct_answers.setter
+    def correct_answers(self, correct_answers):
+        ''' Set the correct answers '''
+        self._correct_answers = correct_answers

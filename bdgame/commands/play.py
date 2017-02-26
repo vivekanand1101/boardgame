@@ -20,9 +20,10 @@ def play():
     board = make_board(items['grid'], items['glen'], items['gbred'])
     click.echo(items['words'])
     result = play_game(players, board, items['words'])
-    if result != "draw":
+    if not isinstance(result, str):
         click.echo()
-        click.secho("The winner is: %s" % result, fg="green")
+        click.secho("The game is over and %s won the game. %s answered: %s"
+                    % (result.name, result.name, result.correct_answers))
         click.echo()
     else:
         click.echo()
