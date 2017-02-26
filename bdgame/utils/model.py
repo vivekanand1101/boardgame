@@ -147,6 +147,68 @@ class Game(object):
             return "draw"
         return p_scores[0]
 
+    def _process_user_input(self, user_input, current_player):
+        ''' Process the user input '''
+
+        words = self.conf['words']
+        if user_input == 'PASS':
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s has PASSed, %s's score is %s" % (
+                    current_player.name,
+                    current_player.name,
+                    current_player.score
+                    )
+            )
+        elif user_input in words and words[user_input]['count'] > 0:
+            # he answered correctly
+            current_player.answers.append(user_input)
+
+            # increase his score
+            current_player.score += 1
+            # update his correct_answers list
+            correct_answers = current_player.correct_answers
+            correct_answers.append(user_input)
+            current_player.correct_answers = correct_answers
+
+            # update the recognized_locations
+            recognized_locations = self.board.recognized_locations
+            recognized_locations.append(words[user_input]['locations'][0])
+            self.board.recognized_locations = recognized_locations
+
+            # decrease the word count
+            words[user_input]['count'] -= 1
+            # as of now, just remove any of the duplicates
+            words[user_input]['locations'].pop()
+
+            click.echo(
+                "%s is a correct choice. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+        elif user_input in words and words[user_input]['count'] == 0:
+            # The word already taken, even the duplicate ones of the word
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s is a already identified. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+        else:
+            # he answered wrong
+            current_player.answers.append(user_input)
+            click.echo(
+                "%s is a wrong choice. %s's score is %s" % (
+                    user_input,
+                    current_player.name,
+                    current_player.score
+                )
+            )
+
     def play_game(self):
         ''' Play the game '''
 
@@ -164,63 +226,9 @@ class Game(object):
             user_input = click.prompt(
                 "%s play, it\'s your turn: " % current_player.name)
             user_input = user_input.strip().upper()
-            if user_input == 'PASS':
-                current_player.answers.append(user_input)
-                click.echo(
-                    "%s has PASSed, %s's score is %s" % (
-                        current_player.name,
-                        current_player.name,
-                        current_player.score
-                        )
-                )
-            elif user_input in words and words[user_input]['count'] > 0:
-                # he answered correctly
-                current_player.answers.append(user_input)
 
-                # increase his score
-                current_player.score += 1
-                # update his correct_answers list
-                correct_answers = current_player.correct_answers
-                correct_answers.append(user_input)
-                current_player.correct_answers = correct_answers
-
-                # update the recognized_locations
-                recognized_locations = self.board.recognized_locations
-                recognized_locations.append(words[user_input]['locations'][0])
-                self.board.recognized_locations = recognized_locations
-
-                # decrease the word count
-                words[user_input]['count'] -= 1
-                # as of now, just remove any of the duplicates
-                words[user_input]['locations'].pop()
-
-                click.echo(
-                    "%s is a correct choice. %s's score is %s" % (
-                        user_input,
-                        current_player.name,
-                        current_player.score
-                    )
-                )
-            elif user_input in words and words[user_input]['count'] == 0:
-                # The word already taken, even the duplicate ones of the word
-                current_player.answers.append(user_input)
-                click.echo(
-                    "%s is a already identified. %s's score is %s" % (
-                        user_input,
-                        current_player.name,
-                        current_player.score
-                    )
-                )
-            else:
-                # he answered wrong
-                current_player.answers.append(user_input)
-                click.echo(
-                    "%s is a wrong choice. %s's score is %s" % (
-                        user_input,
-                        current_player.name,
-                        current_player.score
-                    )
-                )
+            # Process the user input
+            self._process_user_input(user_input, current_player)
 
             all_pass = True
             for player in self.players:
