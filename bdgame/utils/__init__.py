@@ -191,15 +191,21 @@ def _trav_grid(grid, location, shape='any', select='word'):
         horizontal, vertical, diagonal or L '''
 
     coordinates = []
-    if shape in ['horizontal', 'any']:
+    if shape == 'horizontal':
         for i in range(int(location[1]), int(location[3]) + 1):
-            # coordinates += grid[int(location[0])][i]
-            coordinates.append((int(location[0]), i))
+            if (int(location[0]), i) not in coordinates:
+                coordinates.append((int(location[0]), i))
 
-    if shape in ['vertical', 'any']:
+    if shape == 'vertical':
         for i in range(int(location[0]), int(location[2]) + 1):
-            # coordinates += grid[i][int(location[1])]
-            coordinates.append((i, int(location[1])))
+            if (i, int(location[1])) not in coordinates:
+                coordinates.append((i, int(location[1])))
+
+    if shape == 'diagonal':
+        diff = abs(int(location[0]) - int(location[2]))
+        for i in range(diff+1):
+            if (int(location[0])+i, int(location[1])+i) not in coordinates:
+                coordinates.append((int(location[0])+i, int(location[1])+i))
 
     if select == 'word':
         string = ''
@@ -218,36 +224,25 @@ def get_words(grid, locations):
     '''
 
     words = {}
-    for i in range(len(locations)):
-        # the shape is not 'L'
-        word = None
-        if len(locations[i]) == 4:
-            # if the shape is horizontal
-            if locations[i][0] == locations[i][2]:
-                word = _trav_grid(grid, locations[i], shape='horizontal', select='word')
+    for location in locations:
+        shape = _recognize_shape(location)
+        if not shape:
+            raise BDException('The word is not fitting any shape')
 
-            # if the shape is vertical
-            elif locations[i][1] == locations[i][3]:
-                word = _trav_grid(grid, locations[i], shape='vertical', select='word')
-
-            # if the shape is diagonal
-            # elif (
-                    # locations[i][1] != locations[i][3]
-                    # and locations[i][0] != locations[i][2]):
-                # word = _trav_grid(grid, locations[i], shape='diagonal', select='word')
-
-            else:
-                # The shape is L
-                pass
-
+        word = _trav_grid(
+            grid,
+            location,
+            shape=shape,
+            select='word'
+        )
 
         if word not in words:
             words[word] = {}
             words[word]['count'] = 1
-            words[word]['locations'] = [locations[i]]
+            words[word]['locations'] = [location]
         else:
             words[word]['count'] += 1
-            words[word]['locations'].append(locations[i])
+            words[word]['locations'].append(location)
 
     return words
 
@@ -279,20 +274,44 @@ def _words_left(words):
     return count
 
 
+def _recognize_shape(location):
+    ''' Given a location, find what shape it is '''
+
+    if len(location) == 4:
+        if location[0] == location[2]:
+            return 'horizontal'
+
+        if location[1] == location[3]:
+            return 'vertical'
+
+        # if the shape is diagonal
+        # x1 - x2 == y1 - y2
+        if int(location[0]) == (
+                int(location[2]) + int(location[1]) - int(location[3])):
+            return 'diagonal'
+
+    elif len(location) == 6:
+        # Maybe L shape in future
+        pass
+
+
 def _recognized_location(board, j, i):
     ''' From the recognized_locations in board, check if the Coordinates
     are recognized or not '''
 
     recognized = board.recognized_locations
-
     for location in recognized:
+        shape = _recognize_shape(location)
+        if not shape:
+            raise BDException('The word is not fitting any shape')
         all_coordinates = _trav_grid(
             board.grid,
             location,
-            shape='any',
+            shape=shape,
             select='coordinates'
         )
 
+        # click.echo(all_coordinates, nl=False)
         if (i, j) in all_coordinates:
             return True
 
@@ -319,6 +338,7 @@ def display_board(board):
 def play_game(players, board, words):
     ''' Let's play the game return the winner's name or 'draw' '''
 
+    click.echo(words)
     last_player = None
     while _words_left(words):
         current_player = _get_player_turn(
