@@ -12,22 +12,22 @@ from bdgame.utils import create_config
 @app.command()
 @click.option('--gsize', prompt="Grid size: ",
               help="Grid size of board ", default="15 15")
-@click.option('--inp_file', prompt="Input file path of grid",
+@click.option('--inp', prompt="Input file path of grid",
               help="Input file path of the grid", default="input.txt")
 @click.option('--wcount', prompt="Number of correct words: ",
               help="Number of correct words")
 @click.option('--nplayers', prompt="Number of players in the game: ", default=2,
               help="The number of players that will play this game")
-def make(nplayers, gsize, inp_file, wcount):
+def make(nplayers, gsize, inp, wcount):
     ''' Given the game configurations, make the game '''
 
-    if not inp_file.startswith('/'):
-        inp_file = os.path.join(os.path.abspath(
+    if not inp.startswith('/'):
+        inp = os.path.join(os.path.abspath(
             os.path.dirname(__file__)),
             '../..',
-            inp_file
+            inp
         )
-    with click.open_file(inp_file, 'r') as input_file:
+    with click.open_file(inp, 'r') as input_file:
         grid = input_file.read()
 
     players = []
