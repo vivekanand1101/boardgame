@@ -14,6 +14,7 @@ CFG_PATH = os.path.join(os.environ.get('HOME'), '.bdgame')
 CONFIG = ConfigParser()
 CONFIG.optionxform = str
 
+BLACKLISTED_WORDS = ['PASS']
 
 def create_config(nplayers, gsize, grid, players, wcount, locations):
     ''' Method that creates the configuration file
@@ -127,6 +128,11 @@ def _get_words(grid, locations):
         else:
             words[word]['count'] += 1
             words[word]['locations'].append(location)
+
+        for bword in BLACKLISTED_WORDS:
+            if bword in words:
+                words.pop(bword)
+                click.echo("%s is blacklisted, removed")
 
     return words
 

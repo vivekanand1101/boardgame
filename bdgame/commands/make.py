@@ -10,13 +10,12 @@ from bdgame.app import app
 from bdgame.utils import create_config, take_console_input
 
 @app.command()
-@click.option('--gsize', prompt="Grid size: ",
-              help="Grid size of board", default="15 15")
+@click.option('--gsize', help="Grid size of board", default="15 15")
 @click.option('--inp', help="Input file path of the grid")
 @click.option('--wcount', prompt="Number of correct words",
-              help="Number of correct words")
+              help="Number of correct words", type=int)
 @click.option('--nplayers', prompt="Number of players in the game", default=2,
-              help="The number of players that will play this game")
+              help="The number of players that will play this game", type=int)
 def make(nplayers, gsize, inp, wcount):
     ''' Given the game configurations, make the game '''
 
@@ -33,8 +32,12 @@ def make(nplayers, gsize, inp, wcount):
             )
         with click.open_file(inp, 'r') as input_file:
             grid = input_file.read()
-
+            glen = len(grid.splitlines())
+            gbred = len(grid.splitlines()[0].split())
+            gsize = "%s %s" % (glen, gbred)
     else:
+        if not gsize:
+            gsize = click.prompt("Grid size", default="15 15")
         grid = take_console_input(gsize)
 
     players = []
