@@ -9,7 +9,6 @@ from configparser import ConfigParser
 import click
 
 from bdgame.exceptions import BDException, ItemNotFound
-from bdgame.utils import model
 
 CFG_PATH = os.path.join(os.environ.get('HOME'), '.bdgame')
 CONFIG = ConfigParser()
@@ -45,7 +44,7 @@ def create_config(nplayers, gsize, grid, players, wcount, locations):
             CONFIG.write(config_file)
 
 
-def get_item(item):
+def _get_item(item):
     ''' Read the configuration file and return the value of given
     item in config '''
 
@@ -58,7 +57,7 @@ def get_item(item):
     return None
 
 
-def check_grid_sane(grid, glen, gbred):
+def _check_grid_sane(grid, glen, gbred):
     ''' Check if the grid is according to the specifics
     mentioned by the user '''
 
@@ -72,7 +71,7 @@ def check_grid_sane(grid, glen, gbred):
     return True
 
 
-def get_grid(grid):
+def _get_grid(grid):
     ''' Return grid in form of 2D list '''
 
     grid = grid.splitlines()
@@ -83,91 +82,10 @@ def get_grid(grid):
     return grid_copy
 
 
-def load_game_conf():
-    ''' Method which returns all the items required for the game '''
-
-    nplayers = get_item('nplayers')
-    if not nplayers:
-        raise ItemNotFound('Number of players(nplayers) not found in .bdgame')
-    nplayers = int(nplayers)
-
-    players = get_item('players')
-    if not players:
-        raise ItemNotFound('Player names (players) not found in .bdgame')
-
-    players = players.split(',')
-    if len(players) != nplayers:
-        raise BDException('Names of all the players aren\'t present in .bdgame file')
-
-    gsize = get_item('gsize')
-    if not gsize:
-        raise ItemNotFound('Grid size (gsize) is absent in .bdgame')
-
-    if len(gsize.split(' ')) != 2:
-        raise BDException('Grid size format is wrong.')
-
-    gsize = gsize.strip().split(' ')
-    glen, gbred = int(gsize[0]), int(gsize[1])
-
-    grid = get_item('grid')
-    if not grid:
-        raise ItemNotFound('Grid is absent in .bdgame')
-
-    sane = check_grid_sane(grid, glen, gbred)
-    if not sane:
-        click.echo('Grid does not match with grid size, check in config file '
-                   ' or make the game again')
-
-    # Get the grid in form of 2D array
-    grid = get_grid(grid)
-
-    wcount = get_item('wcount')
-    if not wcount:
-        raise ItemNotFound('Number of correct words (wcount) not in .bdgame')
-    wcount = int(wcount)
-
-    locations = get_locations()
-    words = get_words(grid, locations)
-    output = {
-        'nplayers': nplayers,
-        'players': players,
-        'grid': grid,
-        'glen': glen,
-        'gbred': gbred,
-        'wcount': wcount,
-        'words': words,
-        'locations': locations,
-    }
-
-    return output
-
-def make_players(players):
-    ''' Makes player objects from player names
-    :args players: A list of names of all the players
-    '''
-
-    player_list = []
-    for player in players:
-        player_list.append(model.Player(name=player))
-
-    return player_list
-
-
-def make_board(grid, glen, gbred):
-    ''' Makes board object from the given grid '''
-
-    board = model.Board(
-        grid=grid,
-        length=glen,
-        breadth=gbred,
-    )
-
-    return board
-
-def get_locations():
+def _get_locations():
     ''' Get the locations from config  and turn it into a list '''
 
-    locations = get_item('locations')
+    locations = _get_item('locations')
     if not locations:
         raise ItemNotFound(
             'Coordinates of correct words(locations) not found in .bdgame')
@@ -182,7 +100,97 @@ def get_locations():
     return locations_copy
 
 
-def _trav_grid(grid, location, shape='any', select='word'):
+def _get_words(grid, locations):
+    ''' Given the locations in grid, extract the words out of it
+    :args grid: A 2D list of strings
+    :args locations: A list of lists where each list represents Coordinates
+    of each word
+    '''
+
+    words = {}
+    for location in locations:
+        shape = recognize_shape(location)
+        if not shape:
+            raise BDException('The word is not fitting any shape')
+
+        word = trav_grid(
+            grid=grid,
+            location=location,
+            shape=shape,
+            select='word'
+        )
+
+        if word not in words:
+            words[word] = {}
+            words[word]['count'] = 1
+            words[word]['locations'] = [location]
+        else:
+            words[word]['count'] += 1
+            words[word]['locations'].append(location)
+
+    return words
+
+
+def load_game_conf():
+    ''' Method which returns all the items required for the game '''
+
+    nplayers = _get_item('nplayers')
+    if not nplayers:
+        raise ItemNotFound('Number of players(nplayers) not found in .bdgame')
+    nplayers = int(nplayers)
+
+    players = _get_item('players')
+    if not players:
+        raise ItemNotFound('Player names (players) not found in .bdgame')
+
+    players = players.split(',')
+    if len(players) != nplayers:
+        raise BDException('Names of all the players aren\'t present in .bdgame file')
+
+    gsize = _get_item('gsize')
+    if not gsize:
+        raise ItemNotFound('Grid size (gsize) is absent in .bdgame')
+
+    if len(gsize.split(' ')) != 2:
+        raise BDException('Grid size format is wrong.')
+
+    gsize = gsize.strip().split(' ')
+    glen, gbred = int(gsize[0]), int(gsize[1])
+
+    grid = _get_item('grid')
+    if not grid:
+        raise ItemNotFound('Grid is absent in .bdgame')
+
+    sane = _check_grid_sane(grid, glen, gbred)
+    if not sane:
+        click.echo('Grid does not match with grid size, check in config file '
+                   ' or make the game again')
+
+    # Get the grid in form of 2D array
+    grid = _get_grid(grid)
+
+    wcount = _get_item('wcount')
+    if not wcount:
+        raise ItemNotFound('Number of correct words (wcount) not in .bdgame')
+    wcount = int(wcount)
+
+    locations = _get_locations()
+    words = _get_words(grid, locations)
+    output = {
+        'nplayers': nplayers,
+        'players': players,
+        'grid': grid,
+        'glen': glen,
+        'gbred': gbred,
+        'wcount': wcount,
+        'words': words,
+        'locations': locations,
+    }
+
+    return output
+
+
+def trav_grid(grid, location, shape='any', select='word'):
     ''' Get the word from the grid
     :args grid: A 2D list of letters
     :args location: A list of either 4 or 6 elements, depending upon the shape
@@ -216,65 +224,7 @@ def _trav_grid(grid, location, shape='any', select='word'):
     return coordinates
 
 
-def get_words(grid, locations):
-    ''' Given the locations in grid, extract the words out of it
-    :args grid: A 2D list of strings
-    :args locations: A list of lists where each list represents Coordinates
-    of each word
-    '''
-
-    words = {}
-    for location in locations:
-        shape = _recognize_shape(location)
-        if not shape:
-            raise BDException('The word is not fitting any shape')
-
-        word = _trav_grid(
-            grid,
-            location,
-            shape=shape,
-            select='word'
-        )
-
-        if word not in words:
-            words[word] = {}
-            words[word]['count'] = 1
-            words[word]['locations'] = [location]
-        else:
-            words[word]['count'] += 1
-            words[word]['locations'].append(location)
-
-    return words
-
-
-def _game_starter(players):
-    ''' Choose who will start the game
-    The logic can be tweaked '''
-    return players[0]
-
-
-def _get_player_turn(last_player, players):
-    ''' Return the player object whose turn is now '''
-
-    if not last_player:
-        return _game_starter(players)
-
-    for i in range(len(players)):
-        if players[i] == last_player:
-            return players[(i+1) % len(players)]
-
-
-def _words_left(words):
-    ''' Check if there are any words left to be checked out '''
-
-    count = 0
-    for word in words:
-        count += words[word]['count']
-
-    return count
-
-
-def _recognize_shape(location):
+def recognize_shape(location):
     ''' Given a location, find what shape it is '''
 
     if len(location) == 4:
@@ -293,163 +243,3 @@ def _recognize_shape(location):
     elif len(location) == 6:
         # Maybe L shape in future
         pass
-
-
-def _recognized_location(board, j, i):
-    ''' From the recognized_locations in board, check if the Coordinates
-    are recognized or not '''
-
-    recognized = board.recognized_locations
-    for location in recognized:
-        shape = _recognize_shape(location)
-        if not shape:
-            raise BDException('The word is not fitting any shape')
-        all_coordinates = _trav_grid(
-            board.grid,
-            location,
-            shape=shape,
-            select='coordinates'
-        )
-
-        # click.echo(all_coordinates, nl=False)
-        if (i, j) in all_coordinates:
-            return True
-
-    return False
-
-
-def display_board(board):
-    ''' Display the board in a fansy manner '''
-
-    click.echo()
-    for i in range(board.length):
-        for j in range(board.breadth):
-            if not _recognized_location(board, j, i):
-                click.echo(click.style(str(board.grid[i][j] + ' '), fg="yellow"), nl=False)
-                click.echo(nl=False)
-            else:
-                click.echo(click.style(str(board.grid[i][j] + ' '), fg="blue"), nl=False)
-                click.echo(nl=False)
-
-        click.echo()
-    click.echo()
-
-
-def play_game(players, board, words):
-    ''' Let's play the game return the winner's name or 'draw' '''
-
-    click.echo(words)
-    last_player = None
-    while _words_left(words):
-        current_player = _get_player_turn(
-            last_player=last_player,
-            players=players
-        )
-
-        # Show the board
-        display_board(board)
-
-        # Prompt the user to give input
-        user_input = click.prompt(
-            "%s play, it\'s your turn: " % current_player.name)
-        user_input = user_input.strip().upper()
-        if user_input == 'PASS':
-            current_player.answers.append(user_input)
-            click.echo(
-                "%s has PASSed, %s's score is %s" % (
-                    current_player.name,
-                    current_player.name,
-                    current_player.score
-                    )
-            )
-        elif user_input in words and words[user_input]['count'] > 0:
-            # he answered correctly
-            current_player.answers.append(user_input)
-
-            # increase his score
-            current_player.score += 1
-            # update his correct_answers list
-            correct_answers = current_player.correct_answers
-            correct_answers.append(user_input)
-            current_player.correct_answers = correct_answers
-
-            # update the recognized_locations
-            recognized_locations = board.recognized_locations
-            recognized_locations.append(words[user_input]['locations'][0])
-            board.recognized_locations = recognized_locations
-
-            # decrease the word count
-            words[user_input]['count'] -= 1
-            # as of now, just remove any of the duplicates
-            words[user_input]['locations'].pop()
-
-            click.echo(
-                "%s is a correct choice. %s's score is %s" % (
-                    user_input,
-                    current_player.name,
-                    current_player.score
-                )
-            )
-        elif user_input in words and words[user_input]['count'] == 0:
-            # The word already taken, even the duplicate ones of the word
-            current_player.answers.append(user_input)
-            click.echo(
-                "%s is a already identified. %s's score is %s" % (
-                    user_input,
-                    current_player.name,
-                    current_player.score
-                )
-            )
-        else:
-            # he answered wrong
-            current_player.answers.append(user_input)
-            click.echo(
-                "%s is a wrong choice. %s's score is %s" % (
-                    user_input,
-                    current_player.name,
-                    current_player.score
-                )
-            )
-
-        all_pass = True
-        for player in players:
-            if player.answers[-2:] != ['PASS', 'PASS']:
-                all_pass = False
-        if all_pass:
-            return _check_winner(players)
-
-        last_player = current_player
-
-    return _check_winner(players)
-
-
-def _check_winner(players):
-    ''' From the players score, check who is the winner and return name
-    and if any two players having highest score have same score, the match
-    is draw, return 'draw' '''
-
-    p_scores = sorted(players, key=lambda x: x.score, reverse=True)
-    if p_scores[0].score == p_scores[1].score:
-        return "draw"
-    return p_scores[0]
-
-
-def display_results(result, board):
-    ''' Given the result, display it '''
-    if not isinstance(result, str):
-        click.echo()
-        click.secho("The game is over and ", nl=False, fg="green")
-        click.secho("%s " % result.name, nl=False, fg="blue")
-        click.secho("won the game. ", nl=False, fg="green")
-        click.secho("%s " % result.name, nl=False, fg="blue")
-        click.secho("answered: ", nl=False, fg="green")
-        click.secho("%s " % result.correct_answers, nl=False, fg="blue")
-        click.echo()
-        click.secho("The final board looks like: ", fg="red")
-        display_board(board)
-    else:
-        click.echo()
-        click.secho("Match draw :/ ", fg="green")
-        click.echo()
-        click.echo("The final board looks like: ")
-        display_board(board)
