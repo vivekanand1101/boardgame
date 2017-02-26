@@ -267,7 +267,8 @@ def trav_grid(grid, location, shape='any', select='word'):
                 coordinates.append((int(location[0])+i, int(location[1])+i))
 
     if shape == 'oneletter':
-        coordinates.append((int(location[0]), int(location[1])))
+        if (int(location[0]), int(location[1])) not in coordinates:
+            coordinates.append((int(location[0]), int(location[1])))
 
     if select == 'word':
         string = ''
