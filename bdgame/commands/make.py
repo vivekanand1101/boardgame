@@ -10,14 +10,14 @@ from bdgame.app import app
 from bdgame.utils import create_config
 
 @app.command()
-@click.option('--nplayers', prompt="Number of players in the game: ", default=2,
-              help="The number of players that will play this game")
 @click.option('--gsize', prompt="Grid size: ",
               help="Grid size of board ", default="15 15")
 @click.option('--inp_file', prompt="Input file path of grid",
               help="Input file path of the grid", default="input.txt")
 @click.option('--wcount', prompt="Number of correct words: ",
               help="Number of correct words")
+@click.option('--nplayers', prompt="Number of players in the game: ", default=2,
+              help="The number of players that will play this game")
 def make(nplayers, gsize, inp_file, wcount):
     ''' Given the game configurations, make the game '''
 
