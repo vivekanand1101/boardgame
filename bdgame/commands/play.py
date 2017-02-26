@@ -4,8 +4,9 @@
 import click
 
 from bdgame.app import app
-from bdgame.utils import load_game_conf, make_players, make_board, play_game
-from bdgame.exceptions import ItemNotFound, BDException
+from bdgame.utils import (
+    load_game_conf, make_players, make_board, play_game, display_results)
+
 
 @app.command()
 def play():
@@ -20,12 +21,4 @@ def play():
     board = make_board(items['grid'], items['glen'], items['gbred'])
     click.echo(items['words'])
     result = play_game(players, board, items['words'])
-    if not isinstance(result, str):
-        click.echo()
-        click.secho("The game is over and %s won the game. %s answered: %s"
-                    % (result.name, result.name, result.correct_answers))
-        click.echo()
-    else:
-        click.echo()
-        click.secho("Match draw :/ ", fg="green")
-        click.echo()
+    display_results(result)

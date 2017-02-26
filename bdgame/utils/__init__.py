@@ -373,3 +373,20 @@ def _check_winner(players):
     if p_scores[0].score == p_scores[1].score:
         return "draw"
     return p_scores[0]
+
+
+def display_results(result):
+    ''' Given the result, display it '''
+    if not isinstance(result, str):
+        click.echo()
+        click.secho("The game is over and ", nl=False, fg="green")
+        click.secho("%s " % result.name, nl=False, fg="blue")
+        click.secho("won the game. ", nl=False, fg="green")
+        click.secho("%s " % result.name, nl=False, fg="blue")
+        click.secho("answered: ", nl=False, fg="green")
+        click.secho("%s " % result.correct_answers, nl=False, fg="blue")
+        click.echo()
+    else:
+        click.echo()
+        click.secho("Match draw :/ ", fg="green")
+        click.echo()
