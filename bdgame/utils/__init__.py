@@ -93,8 +93,7 @@ def _get_locations():
 
     locations_copy = []
     for i in locations:
-        i = i.strip().split(' ')
-        i = [l for l in i if l != '']
+        i = i.strip().split()
         locations_copy.append(i)
 
     return locations_copy
@@ -189,6 +188,44 @@ def load_game_conf():
 
     return output
 
+
+def override_conf(stream):
+    ''' Given the file data in form of list of strings, override the existing config
+    file. The grid is fixed to be 15 x 15 in this case '''
+
+    # The first 15 lines are the grid
+    grid = stream[:15]
+    grid = ''.join(grid)
+
+    # Number of correct words
+    wcount = int(stream[15])
+
+    # Locations of correct words
+    locations = ','.join(stream[16:16+wcount])
+
+    # Number of players
+    nplayers = int(stream[16+wcount])
+
+    players = []
+    for i in range(1, nplayers + 1):
+        name = click.prompt('Enter name of player: ', default='player %s' % i)
+        name = name.strip()
+        if ',' in name:
+            click.echo(', cannot be in a name, try again')
+            sys.exit()
+        players.append(name)
+
+    # store the names of players as a comma separated string
+    players = ",".join(players)
+
+    create_config(
+        nplayers=nplayers,
+        grid=grid,
+        gsize='15 15',
+        players=players,
+        wcount=wcount,
+        locations=locations,
+    )
 
 def trav_grid(grid, location, shape='any', select='word'):
     ''' Get the word from the grid
