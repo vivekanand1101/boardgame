@@ -147,6 +147,29 @@ class Game(object):
             return "draw"
         return p_scores[0]
 
+    def _process_correct_input(self, user_input, current_player):
+        ''' Adjust the variables when user input was correct '''
+
+        words = self.conf['words']
+        current_player.answers.append(user_input)
+
+        # increase his score
+        current_player.score += 1
+        # update his correct_answers list
+        correct_answers = current_player.correct_answers
+        correct_answers.append(user_input)
+        current_player.correct_answers = correct_answers
+
+        # update the recognized_locations
+        recognized_locations = self.board.recognized_locations
+        recognized_locations.append(words[user_input]['locations'][0])
+        self.board.recognized_locations = recognized_locations
+
+        # decrease the word count
+        words[user_input]['count'] -= 1
+        # as of now, just remove any of the duplicates
+        words[user_input]['locations'].pop()
+
     def _process_user_input(self, user_input, current_player):
         ''' Process the user input '''
 
@@ -162,25 +185,7 @@ class Game(object):
             )
         elif user_input in words and words[user_input]['count'] > 0:
             # he answered correctly
-            current_player.answers.append(user_input)
-
-            # increase his score
-            current_player.score += 1
-            # update his correct_answers list
-            correct_answers = current_player.correct_answers
-            correct_answers.append(user_input)
-            current_player.correct_answers = correct_answers
-
-            # update the recognized_locations
-            recognized_locations = self.board.recognized_locations
-            recognized_locations.append(words[user_input]['locations'][0])
-            self.board.recognized_locations = recognized_locations
-
-            # decrease the word count
-            words[user_input]['count'] -= 1
-            # as of now, just remove any of the duplicates
-            words[user_input]['locations'].pop()
-
+            self._process_correct_input(user_input, current_player)
             click.echo(
                 "%s is a correct choice. %s's score is %s" % (
                     user_input,
@@ -212,7 +217,6 @@ class Game(object):
     def play_game(self):
         ''' Play the game '''
 
-        words = self.conf['words']
         last_player = None
         while self._words_left():
             current_player = self._get_player_turn(
@@ -230,6 +234,7 @@ class Game(object):
             # Process the user input
             self._process_user_input(user_input, current_player)
 
+            # Check if all passed twice
             all_pass = True
             for player in self.players:
                 if player.answers[-2:] != ['PASS', 'PASS']:
