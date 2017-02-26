@@ -236,9 +236,8 @@ def take_console_input(gsize):
     grid = ''
     click.echo("Enter the grid(console input) or try again and specify --inp ")
     for i in range(int(gsize[0])):
-        grid += click.prompt('')
+        grid += click.prompt('', prompt_suffix='')
         grid += '\n'
-    click.echo(grid)
     return grid
 
 
@@ -267,6 +266,9 @@ def trav_grid(grid, location, shape='any', select='word'):
             if (int(location[0])+i, int(location[1])+i) not in coordinates:
                 coordinates.append((int(location[0])+i, int(location[1])+i))
 
+    if shape == 'oneletter':
+        coordinates.append((int(location[0]), int(location[1])))
+
     if select == 'word':
         string = ''
         for i in coordinates:
@@ -278,6 +280,9 @@ def trav_grid(grid, location, shape='any', select='word'):
 
 def recognize_shape(location):
     ''' Given a location, find what shape it is '''
+
+    if len(location) == 2:
+        return 'oneletter'
 
     if len(location) == 4:
         if location[0] == location[2]:
