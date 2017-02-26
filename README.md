@@ -1,7 +1,7 @@
 * A simple cli multiplayer board game in python
 
     How to install
-    ```pip install bdgame```
+    ```python3 -m pip install bdgame```
 
     How to use
 
