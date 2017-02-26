@@ -24,7 +24,6 @@ setup(
     classifiers=[
         'Intended Audience :: Information Technology',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3 :: Only',
     ],
     license='GNU General Public License v2.0',
     entry_points={
