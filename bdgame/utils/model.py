@@ -108,13 +108,13 @@ class Game(object):
             for j in range(self.board.breadth):
                 if not self._recognized_location(j, i):
                     click.echo(
-                        click.style(str(self.board.grid[i][j] + ' '),
+                        click.style(str(' ' + self.board.grid[i][j] + ' '),
                                     fg="yellow"), nl=False
                     )
                     click.echo(nl=False)
                 else:
                     click.echo(
-                        click.style(str(self.board.grid[i][j] + ' '),
+                        click.style(str(' ' + self.board.grid[i][j] + ' '),
                                     fg="blue"), nl=False
                     )
                     click.echo(nl=False)
