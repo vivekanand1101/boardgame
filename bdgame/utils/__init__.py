@@ -78,6 +78,7 @@ def _get_grid(grid):
     grid_copy = []
     for row in grid:
         row = row.split()
+        row = [i.upper() for i in row]
         grid_copy.append(row)
     return grid_copy
 
@@ -226,6 +227,20 @@ def override_conf(stream):
         wcount=wcount,
         locations=locations,
     )
+
+
+def take_console_input(gsize):
+    ''' Take the console input of the grid '''
+
+    gsize = gsize.strip().split()
+    grid = ''
+    click.echo("Enter the grid(console input) or try again and specify --inp ")
+    for i in range(int(gsize[0])):
+        grid += click.prompt('')
+        grid += '\n'
+    click.echo(grid)
+    return grid
+
 
 def trav_grid(grid, location, shape='any', select='word'):
     ''' Get the word from the grid

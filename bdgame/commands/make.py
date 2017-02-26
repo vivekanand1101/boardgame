@@ -7,7 +7,7 @@ import sys
 import click
 
 from bdgame.app import app
-from bdgame.utils import create_config
+from bdgame.utils import create_config, take_console_input
 
 @app.command()
 @click.option('--gsize', prompt="Grid size: ",
@@ -31,8 +31,8 @@ def make(nplayers, gsize, inp, wcount):
             grid = input_file.read()
 
     else:
-        inp = click.prompt(
-            "Enter the grid(console input) or try again and specify --inp ")
+        grid = take_console_input(gsize)
+
     players = []
     for i in range(1, nplayers + 1):
         name = click.prompt('Enter name of player', default='player %s' % i)
