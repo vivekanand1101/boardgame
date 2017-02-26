@@ -11,28 +11,31 @@ from bdgame.utils import create_config
 
 @app.command()
 @click.option('--gsize', prompt="Grid size: ",
-              help="Grid size of board ", default="15 15")
-@click.option('--inp', prompt="Input file path of grid",
-              help="Input file path of the grid", default="input.txt")
-@click.option('--wcount', prompt="Number of correct words: ",
+              help="Grid size of board", default="15 15")
+@click.option('--inp', help="Input file path of the grid")
+@click.option('--wcount', prompt="Number of correct words",
               help="Number of correct words")
-@click.option('--nplayers', prompt="Number of players in the game: ", default=2,
+@click.option('--nplayers', prompt="Number of players in the game", default=2,
               help="The number of players that will play this game")
 def make(nplayers, gsize, inp, wcount):
     ''' Given the game configurations, make the game '''
 
-    if not inp.startswith('/'):
-        inp = os.path.join(os.path.abspath(
-            os.path.dirname(__file__)),
-            '../..',
-            inp
-        )
-    with click.open_file(inp, 'r') as input_file:
-        grid = input_file.read()
+    if inp:
+        if not inp.startswith('/'):
+            inp = os.path.join(os.path.abspath(
+                os.path.dirname(__file__)),
+                '../..',
+                inp
+            )
+        with click.open_file(inp, 'r') as input_file:
+            grid = input_file.read()
 
+    else:
+        inp = click.prompt(
+            "Enter the grid(console input) or try again and specify --inp ")
     players = []
     for i in range(1, nplayers + 1):
-        name = click.prompt('Enter name of player: ', default='player %s' % i)
+        name = click.prompt('Enter name of player', default='player %s' % i)
         name = name.strip()
         if ',' in name:
             click.echo(', cannot be in a name, try again')
@@ -45,7 +48,7 @@ def make(nplayers, gsize, inp, wcount):
     locations = []
     for i in range(int(wcount)):
         location = click.prompt("Enter the location of word "
-                                " on grid like( 2 3 2 5): ")
+                                " on grid like( 2 3 2 5) ")
         if len(location.strip().split()) % 2 != 0:
             click.echo("Locations are two D coordinates, they have to be pairs"
                        " Try again.")
