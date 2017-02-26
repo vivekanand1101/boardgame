@@ -20,6 +20,10 @@ from bdgame.utils import create_config, take_console_input
 def make(nplayers, gsize, inp, wcount):
     ''' Given the game configurations, make the game '''
 
+    if not wcount > 0:
+        click.echo("Don't make fool of the players")
+        sys.exit()
+
     if inp:
         if not inp.startswith('/'):
             inp = os.path.join(os.path.abspath(
